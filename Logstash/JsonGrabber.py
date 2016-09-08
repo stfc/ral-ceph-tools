@@ -6,7 +6,11 @@ if len(str(now.day)) == 1:
     nowday = "0"+str(now.day)
 else:
     nowday = str(now.day)
-datevar = str(now.year)+"-0"+str(now.month)+"-"+nowday+"-"+str(now.hour)
+if len(str(now.month)) == 1:
+    nowmonth = "0"+str(now.month)
+else:
+    nowmonth = str(now.month)
+datevar = str(now.year)+nowmonth+"-"+nowday+"-"+str(now.hour)
 Path = "/tmp/Russell/" #path for files
 os.system("radosgw-admin"+" log list > "+Path+"loglist.txt") #runs the command to grab loglist
 with open(Path+'loglist.txt') as f:
@@ -25,7 +29,7 @@ with open(Path+'loglist.txt') as f:
                     FILED = FILED["log_entries"]
                     for i, item in enumerate(FILED):
                         myfile.write(json.dumps(item)) #writes the item to a line
-                        myfile.write("\n") #adds newline so the entire file is not a single line
+                        myfile.write("\n") #adds newline so the entire file isnot a single line
                     myfile.close()
             except:
                 print "loglist is empty"

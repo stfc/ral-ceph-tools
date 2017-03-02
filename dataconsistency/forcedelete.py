@@ -2,7 +2,7 @@
 #########################################################################
 # Deletes a list of files in the form:
 # datadisk/rucio/mc15_14TeV/24/3d/HITS.09709777._000863.pool.root.1
-# The file containing the input files is given as the argument
+#
 #
 #########################################################################
 
@@ -26,7 +26,11 @@ with open(sys.argv[1]) as f:
             numberchunks = math.ceil(filesize / 67108864)
             print filename + " is made up of " + str(numberchunks) + " chunks"
         except:
-            print chunk0 + " does not exist.  Skipping to next file."
+            print chunk0 + " does not have metadata.  Trying force delete"
+            try:
+                ioctx.remove_object(chunk0)
+            except:
+                print chunk0 + " does not exist.  Skipping."
             continue
 # Delete all the chunks
         for i in range(0, int(numberchunks)):

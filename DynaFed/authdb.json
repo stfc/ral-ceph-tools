@@ -1,0 +1,180 @@
+{
+"dteam":
+  {
+  "disk":
+    {
+    "r":
+      {
+      "role": ["dteamuser","dteamprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "w":
+      {
+      "remoteaddr": ["130.246.243.160"],
+      "role": ["dteamuser","dteamprod"]
+      },
+    "l":
+      {
+      "role": ["dteamuser","dteamprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "d":
+      {
+      "role": ["dteamuser","dteamprod"]
+      }
+    }
+  },
+"ligo":
+  {
+  "data":
+    {
+    "r":
+      {
+      "role": ["ligouser","ligoprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      },
+    "w":
+      {
+      "role": ["ligouser","ligoprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      },
+    "l":
+      {
+      "role": ["ligouser","ligoprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      },
+    "d":
+      {
+      "role": ["ligouser","ligoprod"],
+      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      }
+    }
+  },
+"atlas":
+  {
+  "ral-logs":
+    {
+    "r":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      },
+    "w":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      },
+    "l":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      },
+    "d":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      }
+    },
+  "ral-eventservice":
+    {
+    "r":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      },
+    "w":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "l":
+      { 
+      "role": ["atlasuser","atlasprod"]
+      },
+    "d": 
+      {
+      "role": ["atlasuser","atlasprod"]
+      }
+    },
+  "lancs-logs":
+    {
+    "r":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "w":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "l":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "d":
+      {
+      "role": ["atlasuser","atlasprod"]
+      }
+    },
+  "lancs-eventservice":
+    {
+    "r":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "w":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "l":
+      {
+      "role": ["atlasuser","atlasprod"]
+      },
+    "d":
+      {
+      "role": ["atlasuser","atlasprod"]
+      }
+    },
+  "azure-datadisk":
+    {
+    "r":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "w":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "l":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "d":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      }
+    },
+  "azure-scratchdisk":
+    {
+    "r":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "w":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "l":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      },
+    "d":
+      {
+      "role": ["atlasuser","atlasprod"],
+      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      }
+    }
+  }
+
+}
+

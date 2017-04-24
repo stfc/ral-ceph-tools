@@ -16,7 +16,7 @@ import sys, re, json
 class _Authlist(object):
   GridMapFile = "/etc/grid-security/grid-mapfile"
   d = {}
-    
+
   def __init__(self):
     print "Loading Gridmap file from " + self.GridMapFile
     with open(self.GridMapFile) as f:
@@ -46,18 +46,14 @@ class _AuthDB(object):
       self.d = json.load(f)
 #    print(self.d)
 
-  def authorizedUsers(self,VO,bucket,mode):
+  def authorizedUsers(self,VO,bucket):
 #    print "VO name is " + VO
 #    print "Bucket name is " + bucket
-#    print "Mode is " + mode
-    return self.d[VO][bucket][mode]
+    return self.d[VO][bucket]
 
 # Initialize a global instance of the authlist class, to be used inside the isallowed() function
 myauthlist = _Authlist()
 myauthDB = _AuthDB()
-
-#regex = re.compile(r"CN=[[:alnum:][:blank:]]*$")
-
 def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode="0", fqans=None, keys=None):
 #  print "clientname", clientname
 #  print "remote address", remoteaddr
@@ -65,67 +61,47 @@ def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode=
 #  print "keys", keys
 #  print "mode", mode
 #  print "resource", resource
-  
-  # Deny access to anyone without a certificate in the GridMap File
-#  altclientname = regex.sub("", clientname)
-#  altclientname = re.sub("CN=[[:alnum:][:blank:]]*$", "", clientname)
-#  print clientname
-#  print altclientname
-#  if not (myauthlist.authenticateUser(clientname) or myauthlist.authenticateUser(altclientname)):
-#    return 1
 
-# Allow anyone to list the /gridpp directory
-#  if ((mode == 'l' and resource == '/gridpp') or (mode == 'r' and resource == '/gridpp/')):
-#    return 0
-  
-# bucket name can be extracted from resource which looks like: /gridpp/dteam-disk/test1 
+# bucket name can be extracted from resource which looks like: /gridpp/dteam-disk/test1
 # Split on '/' and take the 3rd entry
   path = resource.split('/')
+# For paths with a trailing / remove final entry.
   if(path[-1] == ''):
     del path[-1]
 #  print(path)
-  if (len(path) <= 1):
-    return 1
-  elif (len(path) == 2 or len(path) == 3):
-#    if ((path[1] == 'gridpp') and (mode == 'r' or mode == 'l')):
+# Allow anyone to browse the top level directory (They can see what VO names are)
+  if (len(path) <= 3):
     if (mode == 'r' or mode == 'l'):
       return 0
     else:
       return 1
-#  elif (len(path) == 3):
-#    VO = path[2]
-#    bucket = 'default'
   else:
     VO = path[2]
     bucket = path[3]
 
   a = {}
   try:
-    a = myauthDB.authorizedUsers(VO, bucket, mode)
+    a = myauthDB.authorizedUsers(VO, bucket)
 #    print(a)
   except:
+    print "Failed to load authorized Users, denying access"
     return 1;
 
   for k, v in a.iteritems():
     if (k == "role" and myauthlist.getRole(clientname) in v):
-#      print "Role matched " + myauthlist.getRole(clientname)
-      return 0
-    if (k == "clientname" and clientname in v): 
-#      print "DN matched " + clientname
-      return 0
+      if (mode in v[myauthlist.getRole(clientname)]):
+#        print "Role matched " + myauthlist.getRole(clientname)
+        return 0
+    if (k == "clientname" and clientname in v):
+      if (mode in v[clientname]):
+#        print "DN matched " + clientname
+        return 0
     if (k == "remoteaddr" and remoteaddr in v):
-#      print "Remote IP matched " + remoteaddr
-      return 0
+      if (mode in v[remoteaddr]):
+#        print "Remote IP matched " + remoteaddr
+        return 0
 
-  # Read/list modes are always open
-#  if (mode == 'r') or (mode == 'l'):
-#    return 0
-    
-  # Allow atlasprod to do anything
-#  if (myauthlist.getRole(clientname) == 'atlasprod'):
-#    return 0
-    
-  # If any use case slips through deny access for safety
+  # If user is still not authorized: deny access!
   return 1
 
 

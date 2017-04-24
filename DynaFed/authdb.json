@@ -3,24 +3,20 @@
   {
   "disk":
     {
-    "r":
+    "role":
       {
-      "role": ["dteamuser","dteamprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      "dteamuser": "rwld",
+      "dteamprod": "rwld"
       },
-    "w":
+    "clientname":
       {
-      "remoteaddr": ["130.246.243.160"],
-      "role": ["dteamuser","dteamprod"]
+      "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman": "rwld",
+      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst": "rwld",
+      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff": "rwld"
       },
-    "l":
+    "remoteaddr":
       {
-      "role": ["dteamuser","dteamprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
-      },
-    "d":
-      {
-      "role": ["dteamuser","dteamprod"]
+      "130.246.243.160": "rwld"
       }
     }
   },
@@ -28,25 +24,15 @@
   {
   "data":
     {
-    "r":
+    "role":
       {
-      "role": ["ligouser","ligoprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      "ligouser": "rwld",
+      "ligoprod": "rwld"
       },
-    "w":
+    "clientname":
       {
-      "role": ["ligouser","ligoprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
-      },
-    "l":
-      {
-      "role": ["ligouser","ligoprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
-      },
-    "d":
-      {
-      "role": ["ligouser","ligoprod"],
-      "clientname": ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman", "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst"]
+      "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=bbockelm/CN=659869/CN=Brian Paul Bockelman": "rwld",
+      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=alastair dewhurst": "rwld"
       }
     }
   },
@@ -54,127 +40,59 @@
   {
   "ral-logs":
     {
-    "r":
-      { 
-      "role": ["atlasuser","atlasprod"]
-      },
-    "w":
-      { 
-      "role": ["atlasuser","atlasprod"]
-      },
-    "l":
-      { 
-      "role": ["atlasuser","atlasprod"]
-      },
-    "d":
-      { 
-      "role": ["atlasuser","atlasprod"]
+    "role":
+      {
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       }
     },
   "ral-eventservice":
     {
-    "r":
-      { 
-      "role": ["atlasuser","atlasprod"]
-      },
-    "w":
+    "role":
       {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "l":
-      { 
-      "role": ["atlasuser","atlasprod"]
-      },
-    "d": 
-      {
-      "role": ["atlasuser","atlasprod"]
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       }
     },
   "lancs-logs":
     {
-    "r":
+    "role":
       {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "w":
-      {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "l":
-      {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "d":
-      {
-      "role": ["atlasuser","atlasprod"]
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       }
     },
   "lancs-eventservice":
     {
-    "r":
+    "role":
       {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "w":
-      {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "l":
-      {
-      "role": ["atlasuser","atlasprod"]
-      },
-    "d":
-      {
-      "role": ["atlasuser","atlasprod"]
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       }
     },
   "azure-datadisk":
     {
-    "r":
+    "role":
       {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       },
-    "w":
+    "clientname":
       {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
-      },
-    "l":
-      {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
-      },
-    "d":
-      {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff": "rwld"
       }
     },
   "azure-scratchdisk":
     {
-    "r":
+    "role":
       {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      "atlasuser": "rwld",
+      "atlasprod": "rwld"
       },
-    "w":
+    "clientname":
       {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
-      },
-    "l":
-      {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
-      },
-    "d":
-      {
-      "role": ["atlasuser","atlasprod"],
-      "clientname": ["/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff"]
+      "/C=UK/O=eScience/OU=CLRC/L=RAL/CN=andrew lahiff": "rwld"
       }
     }
   }
-
 }
-

@@ -92,13 +92,13 @@ def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode=
 # Check to see if user is in the grid-mapfile
     if (k == "role"):
       try:
-        user = myauthlist.getRole(clientname)
+        permissions = v[myauthlist.getRole(clientname)]
       except:
 #        print "DN not in grid-mapfile"     
         pass
       else:
-        if (mode in v[user]):
-#          print "Role matched " + user
+        if (mode in permissions):
+#          print "Role matched " + myauthlist.getRole(clientname)
           return 0
 
 # Check to see if the DN has been added to the authDB

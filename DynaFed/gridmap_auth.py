@@ -54,6 +54,7 @@ class _AuthDB(object):
 # Initialize a global instance of the authlist class, to be used inside the isallowed() function
 myauthlist = _Authlist()
 myauthDB = _AuthDB()
+
 def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode="0", fqans=None, keys=None):
 #  print "clientname", clientname
 #  print "remote address", remoteaddr
@@ -88,20 +89,31 @@ def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode=
     return 1;
 
   for k, v in a.iteritems():
-    if (k == "role" and myauthlist.getRole(clientname) in v):
-      if (mode in v[myauthlist.getRole(clientname)]):
-#        print "Role matched " + myauthlist.getRole(clientname)
-        return 0
+# Check to see if user is in the grid-mapfile
+    if (k == "role"):
+      try:
+        user = myauthlist.getRole(clientname)
+      except:
+#        print "DN not in grid-mapfile"     
+        pass
+      else:
+        if (mode in v[user]):
+#          print "Role matched " + user
+          return 0
+
+# Check to see if the DN has been added to the authDB
     if (k == "clientname" and clientname in v):
       if (mode in v[clientname]):
 #        print "DN matched " + clientname
         return 0
+
+# Check to see if the hostname has been given specific priveleges
     if (k == "remoteaddr" and remoteaddr in v):
       if (mode in v[remoteaddr]):
 #        print "Remote IP matched " + remoteaddr
         return 0
 
-  # If user is still not authorized: deny access!
+# If user is still not authorized: deny access!
   return 1
 
 

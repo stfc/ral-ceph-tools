@@ -1,0 +1,17 @@
+ATLAS require site storages to periodically provide a list of files so that they can search for dark data.  The wiki with full instructions can be found here:
+https://twiki.cern.ch/twiki/bin/view/AtlasComputing/DDMDarkDataAndLostFiles#Automated_checks_Site_Responsibi
+
+The specification is for a file system while ceph is an object store.  
+a list of files (with relative path) from the directory tree belonging to particular DDM endpoint
+
+For files in datadisk
+surl = gsiftp://gridftp.echo.stfc.ac.uk/atlas:datadisk/rucio/data16_13TeV/ab/cd/file001.root
+In the dump it will look like:
+rucio/data16_13TeV/ab/cd/file001.root
+
+This dump will be saved to:
+surl = gsiftp://gridftp.echo.stfc.ac.uk/atlas:datadisk/dumps/dump_<date>
+where date is of the format: YYYYMMDD
+
+The python script will also generate the dump for scratchdisk.
+

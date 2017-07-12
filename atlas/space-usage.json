@@ -1,0 +1,22 @@
+{
+"ATLASDATADISK":
+{"status": "online",
+"status_message": "Report for space on Echo Datadisk",
+"list_of_paths": ["/atlas:datadisk/"],
+"total_space": 2500000000000000,
+"used_space": -1,
+"num_files": -1,
+"time_stamp": 1499694346
+},
+
+"ATLASSCRATCHDISK":
+{"status": "online",
+"status_message": "Report for space on Echo Scratchdisk",
+"list_of_paths": ["/atlas:scratchdisk/"],
+"total_space": 100000000000000,
+"used_space": -1,
+"num_files": -1,
+"time_stamp": 1499694346
+}
+
+}

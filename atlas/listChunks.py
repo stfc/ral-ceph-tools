@@ -9,7 +9,7 @@
 
 import rados, sys, gzip, time
 
-pool_name = argv[1]
+pool_name = sys.argv[1]
 today = time.strftime('%Y%m%d') 
 directory = "/root/filelistdumps/"
 

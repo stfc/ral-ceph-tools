@@ -1,0 +1,343 @@
+#!/usr/bin/env python
+#
+#  Copyright (c) 2013-2016 SWITCH http://www.switch.ch
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+#TODO is this forward compatible?
+#for printing to standard error
+from __future__ import print_function
+
+import argparse
+import os
+import subprocess
+import sys
+import re
+
+#jsons output + pprint debug
+import json
+from pprint import pprint
+
+
+__version__ = '1.5.2'
+
+# default ceph values
+CEPH_COMMAND = '/usr/bin/ceph'
+
+STATUS_OK = 0
+STATUS_WARNING = 1
+STATUS_ERROR = 2
+STATUS_UNKNOWN = 3
+
+def prints(string):
+    print("::STDERR::>"+string,file=sys.stderr)
+
+#TODO remove HEALTH_ERR overrides, just test entries using the live logs
+health_override = { 
+    "apply":True,
+    "checks" : {
+        "OSD_SCRUB_ERRORS":{ "severity":"HEALTH_WARN" },
+        "PG_DAMAGED":{ "severity":"HEALTH_WARN" },
+        #"PG_DEGRADED":{"severity":"HEALTH_ERR"},
+        #"LARGE_OMAP_OBJECTS":{"severity":"HEALTH_ERR"},
+    }              
+}
+
+health_code_dict = {
+    "HEALTH_OK":0,
+    "HEALTH_WARN":1,
+    "HEALTH_ERR":2,
+    "HEALTH_UNKOWN":3
+}
+
+def main():
+
+    # parse args
+    parser = argparse.ArgumentParser(description="'ceph health' nagios plugin.")
+    parser.add_argument('-e','--exe', help='ceph executable [{}]'.format(CEPH_COMMAND))
+    parser.add_argument('--cluster', help='ceph cluster name')
+    parser.add_argument('-c','--conf', help='alternative ceph conf file')
+    parser.add_argument('-m','--monaddress', help='ceph monitor address[:port]')
+    parser.add_argument('-i','--id', help='ceph client id')
+    parser.add_argument('-n','--name', help='ceph client name')
+    parser.add_argument('-k','--keyring', help='ceph client keyring file')
+    parser.add_argument('-w','--whitelist', help='whitelist regexp for ceph health warnings')
+    parser.add_argument('-d','--detail', help="exec 'ceph health detail'", action='store_true')
+    parser.add_argument('-V','--version', help='show version and exit', action='store_true')
+
+    parser.add_argument('-r','--raw', help="exec 'ceph health [!-fjson]', (no json output)", action='store_true')
+    parser.add_argument('-g','--debug', help="debugging output", action='store_true')
+    args = parser.parse_args()
+
+    # validate args
+    ceph_exec = args.exe if args.exe else CEPH_COMMAND
+    if not os.path.exists(ceph_exec):
+        print("ERROR: ceph executable {} doesn't exist").format(ceph_exec)
+        return STATUS_UNKNOWN
+        #TODO remove status codes in favour of dict
+        #return health_code_dict["HEALTH_UNKOWN"]
+
+    if args.version:
+        print('versions {}').format(__version__)
+        return STATUS_OK
+        #return health_code_dict["HEALTH_OK"]
+
+    if args.conf and not os.path.exists(args.conf):
+        print("ERROR: ceph conf file {} doesn't exist").format(args.conf)
+        return STATUS_UNKNOWN
+        #return health_code_dict["HEALTH_UNKOWN"]
+
+    if args.keyring and not os.path.exists(args.keyring):
+        print("ERROR: keyring file {} doesn't exist").format(args.keyring)
+        return STATUS_UNKNOWN
+        #return health_code_dict["HEALTH_UNKOWN"]
+
+    # build command
+    ceph_health = [ceph_exec]
+    if args.monaddress:
+        ceph_health.append('-m')
+        ceph_health.append(args.monaddress)
+    if args.cluster:
+        ceph_health.append('--cluster')
+        ceph_health.append(args.cluster)
+    if args.conf:
+        ceph_health.append('-c')
+        ceph_health.append(args.conf)
+    if args.id:
+        ceph_health.append('--id')
+        ceph_health.append(args.id)
+    if args.name:
+        ceph_health.append('--name')
+        ceph_health.append(args.name)
+    if args.keyring:
+        ceph_health.append('--keyring')
+        ceph_health.append(args.keyring)
+    ceph_health.append('health')
+
+    #output json formatted breakdown
+    if args.raw:
+        json_output = False
+    else:
+        ceph_health.append("-fjson")
+        json_output = True
+
+    include_details = False
+    if args.detail:
+        ceph_health.append('detail')
+        include_details = True
+
+    if args.debug: debugging_on = True
+    else: debugging_on = False
+
+    #debugging 
+    def debug(debug_output="debug",title="",num="",json=False):
+        if not debugging_on: return
+        print(" ")
+        print(" ")
+        print("DEBUG {} ===================".format(num))
+        print(title)
+        if json: pprint(debug_output)
+        else: print(debug_output)
+        print("DEBUG {} end ===============".format(num))
+        print(" ")
+        print(" ")
+
+    #old string handling format
+    def handleStringFormat(output,err):
+        #parse output
+        if output:
+            # merge multi-lines of output in one line
+            one_line = output.replace('\n','; ')
+            if one_line.startswith('HEALTH_OK'):
+                #print('HEALTH OK: {}'.format(one_line[len('HEALTH_OK')+1:]))
+                one_line= one_line[len('HEALTH_OK')+1:].strip()
+                if one_line:
+                
+                    print('HEALTH OK: {}'.format(one_line))
+                else:
+                    print('HEALTH OK')
+                return STATUS_OK
+            elif one_line.startswith('HEALTH_WARN'):
+                if args.whitelist and re.search(args.whitelist, one_line):
+                    print('HEALTH OK')
+                    return STATUS_OK
+     
+                print('HEALTH WARNING: {}'.format(one_line[len('HEALTH_WARN')+1:]))
+                return STATUS_WARNING
+            elif one_line.startswith('HEALTH_ERR'):
+                print('HEALTH ERROR: {}'.format(one_line[len('HEALTH_ERR')+1:]))
+                return STATUS_ERROR
+            else:
+                print(one_line)
+    
+        elif err:
+           # read only first line of error
+           one_line = err.split('\n')[0]
+           if '-1 ' in one_line:
+               idx = one_line.rfind('-1 ')
+               print('ERROR: {}: {}'.format(ceph_exec, one_line[idx+len('-1 '):]))
+           else:
+               print(one_line)
+    
+        return STATUS_UNKNOWN
+
+    # exec command
+    p = subprocess.Popen(ceph_health,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    output, err = p.communicate()
+
+    #debug(debug_output=output)
+
+    if not json_output:
+        prints("RAW OUTPUT (this option (--raw) is deprecated)")
+        prints("warning, this option does not support health reporting overrides")
+
+        if output:
+            #print(output)
+            return handleStringFormat(output,err)
+        elif err:
+            #print(err)
+            prints(err)
+            return 3
+
+    #debug0
+    """
+    print("\n\n\n\n\n")
+    print("output =================\n{}\noutput =================".format(output))
+    print("err =================\n{}\nerr =================".format(err))
+    """
+
+    try:
+        health_json = json.loads(output)
+    except:
+        prints("incorrect json formatting.\nforwarding raw output")
+        print("incorrect json formatting")
+        print(output)
+        return 3
+        
+    #with open('./scrub_err_example') as f:
+        #health_json = json.load(f)
+
+    ## health_json
+    #"checks": {
+    #    "MANY_OBJECTS_PER_PG": {
+    #    "severity": "HEALTH_WARN",
+    #    "detail":[{"message":"detailed message string"}]
+    #    "summary": {
+    #        "message": "1 pools have many more objects per pg than average"
+    #       }
+    #   },
+    #"status":"HEALTH_ERR"
+ 
+    #TODO handle trash input
+
+    debug(health_json,num=1,json=True)
+
+    #TODO vim commands to remove when times get better
+    # :@" 
+    # :set expandtab tabstop=4 shiftwidth=4 autoindent smartindent relativenumber scrolloff=5
+    # :retab 
+    # :colorscheme koehler
+        
+    ret = health_code_dict["HEALTH_OK"] # default return code for health check
+    messages=[]
+
+    if health_json:
+        for health_type_str in health_json["checks"].keys(): #returns health_type_str ("MANY_OBJECTS" etc)
+
+            summary = health_json["checks"][health_type_str]["summary"]["message"]
+            severity = health_json["checks"][health_type_str]["severity"]
+            if include_details:
+
+                details_arr = health_json["checks"][health_type_str]["detail"]
+
+                debug(details_arr,num=2)
+
+            override=False
+            if health_type_str in health_override["checks"].keys() and health_override["apply"]: override=True
+
+            #if override has been defined for particular health_type
+            if override:    severity_override=health_override["checks"][health_type_str]["severity"]
+            else:           severity_override=""
+
+            #if override has been defined for particular health_type
+            if override:
+                    health_code = health_code_dict[severity_override]
+                    ret=max(ret, health_code)
+            else:
+                    health_code = health_code_dict[severity]
+                    ret=max(ret, health_code)
+
+            #fatality (err=fatal, warn=non-fatal) always matches the override error type if it exists.
+            #can have "non-fatal" errs and fatal "warns". 
+            fatality_str=""
+            if "HEALTH_ERR" in severity or "HEALTH_ERR" in severity_override:
+                if health_code == 1:
+                    fatality_str = "NON_FATAL_"
+                elif health_code == 2:
+                    fatality_str = "FATAL_"
+                elif health_code == 3:
+                    fatality_str = "UNKNOWN_"
+            elif "HEALTH_WARN" in severity or "HEALTH_WARN" in severity_override:
+                if health_code == 2:
+                    fatality_str = "FATAL_"
+                elif health_code == 3:
+                    fatality_str = "UNKNOWN_"
+                
+            #TODO this format switches the severity string for the override value
+            if override: severity_str = severity_override
+            else: severity_str = severity
+
+            severity_str = severity
+
+            #TODO this format retains the original message but fatality_str will reflect how much we should care
+            #TODO format (non-fatal):HEALTH_ERR to NON_FATAL_HEALTH_ERR
+            new_message = "{}{} : {} : {} ".format(fatality_str, severity_str, health_type_str, summary)
+
+            if include_details:
+                for detail_message_d in details_arr:
+                    detail_message = detail_message_d["message"]
+
+                    new_message += "\t{},".format(detail_message)
+
+                    debug(title="detail_message",debug_output=detail_message,num=3)
+                    debug(title="new_message",debug_output=new_message,num=3)
+                    
+            new_message += ";    "
+
+            #append message string to text output field
+            messages += [(health_code, new_message)] #can be sorted by (overriden) severity order
+
+            debug(title="loop variables",debug_output="severity override {}\nseverity {}\nhealth code {}\nhealth type {}\nsummary {}".format(severity_override,severity,health_code,health_type_str,summary),num=4)
+        #else:
+            #return health_code_dict["HEALTH_UNKOWN"]
+
+        messages_sorted=sorted(messages,reverse=True)
+
+        message=""
+        for message_value_pair in messages_sorted:
+            message += message_value_pair[1]
+
+        debug(title="return value",debug_output=ret,num=5)
+
+        #final output
+        print("{}".format(message))
+        return ret 
+    elif err:
+        prints("ERROR: {}\n".format(err))  
+        print("error, no output") 
+        return health_code_dict["HEALTH_UNKOWN"]
+
+if __name__ == "__main__":
+    sys.exit(main())
+

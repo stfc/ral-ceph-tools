@@ -76,6 +76,9 @@ def isallowed(clientname="unknown", remoteaddr="nowhere", resource="none", mode=
       return 0
     else:
       return 1
+# Return a permission denied if anyone tries to delete a top level directory (ie delete a bucket)
+  elif (len(path) == 4 and mode == 'd'):
+    return 1
   else:
     VO = path[2]
     bucket = path[3]

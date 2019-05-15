@@ -1,0 +1,34 @@
+#!/bin/bash
+# required: jq
+# DISCLAIMER: THIS SCRIPT COMES WITH NO WARRANTY OR GUARANTEE
+# OF ANY KIND.
+# 
+#
+# Written by: Tom Byrne
+
+re='^[0-9]+$'
+if [[ $1 =~ $re ]] #if the query is an OSD ID
+then
+jq -sr "group_by(.id) | .[] | add | select ( .id == $1 )" \
+<( ceph pg dump -fjson  | \
+jq -r '.pg_stats[] |  select (.up != .acting) |  { id: (.up-.acting)[], on: {id : .pgid, state, last_change} }, { id: (.acting-.up)[], off: {id : .pgid, state, last_change} }' | \
+jq -s 'group_by(.id) | map({"id": .[0].id, "moving_off": map(.off | select ( . != null )), "moving_on": map( .on | select( . != null ))}) | .[] | .off_count = (.moving_off | length) | .on_count = (.moving_on | length)') \
+<( ceph osd df -fjson | \
+jq '.nodes[]') 
+exit
+fi
+
+echo "ID        crush  rewgt   size      free    util      PGs   on   off"
+jq -sr 'group_by(.id) | .[] | add | [.name, .crush_weight, .reweight, .kb, .kb_avail, .utilization, .pgs, .on_count, .off_count] | @tsv' \
+<( ceph pg dump -fjson 2>/dev/null | \
+jq -r '.pg_stats[] |  select (.up != .acting) |  { id: (.up-.acting)[], on: .pgid }, { id: (.acting-.up)[], off: .pgid }' | \
+jq -s 'group_by(.id) | map({"id": .[0].id, "moving_off": map(.off | select ( . != null )), "moving_on": map( .on | select( . != null ))}) | .[] | .off_count = (.moving_off | length) | .on_count = (.moving_on | length)') \
+<( ceph osd df -fjson | \
+jq '.nodes[]') | \
+if [ ${1-x} == "-m" ]
+then
+awk '$9 >= 0' # only return OSDs with movement
+else
+cat
+fi | \
+awk '{printf "%-8s %6.3f %6.3f %6iGB %6iGB %6.1f%% %6i %4i↑ %4i↓\n", $1, $2, $3, $4 / (1024*1024) , $5 / (1024*1024), $6, $7, $8, $9}' | sort -nrk6 

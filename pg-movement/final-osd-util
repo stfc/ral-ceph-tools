@@ -1,0 +1,76 @@
+#!/bin/bash
+# required: jq
+# DISCLAIMER: THIS SCRIPT COMES WITH NO WARRANTY OR GUARANTEE
+# OF ANY KIND.
+# Written by: Tom Byrne
+
+
+pg_dump_cache="/tmp/ceph-pg-dump-json.cached"
+osd_dump_cache="/tmp/ceph-osd-df-json.cached"
+
+if [ ! -z $1 ] && [ "$1" = "-c" ]
+then
+	# try to use cached copies if avaliable
+	shift
+else 
+	rm -f $pg_dump_cache $osd_dump_cache
+fi
+
+re='^[0-9]+$'
+if [[ ! $1 =~ $re ]]
+then
+	echo "usage: [PROGRAM] [-c] osd_id"
+	echo ""
+	echo "description: returns the estimated osd utilisation (in percentage points) after it has finished backfilling."
+	echo "             in testing it looks to be ~0.3% below the reported osd df util."
+	echo ""
+	echo "             if pgs have large sets (>3 osds), they are assumed to be EC 8+3."
+	echo ""
+	echo "arguments:"
+	echo "    -c     -  (optional) uses cached copies of cluster data (if avaliable)"
+	echo "                         speeds up execution and reduces load when using script in a loop"
+	echo "    osd_id -  (required) id of osd to check, i.e. '2312'"
+	echo ""
+	exit 1
+fi
+
+osd_id=$1
+
+if [ ! -f "$pg_dump_cache" ]
+then
+	ceph pg dump -fjson 2>/dev/null > $pg_dump_cache
+fi
+
+if [ ! -f "$osd_dump_cache" ]
+then
+	ceph osd df -fjson > $osd_dump_cache
+fi
+
+osd_size_kb=$(cat $osd_dump_cache | jq ".nodes[] | select ( .id == $osd_id) | .kb")
+if [ -z $osd_size_kb ] || [ $osd_size_kb -eq 0 ]
+then
+	echo "error: osd not found or destroyed"
+	exit 1
+fi
+
+osd_size=$(( osd_size_kb * 1024 ))
+
+osd_current_sum=0
+osd_final_sum=0
+
+mapfile -t pgs_array < <( cat $pg_dump_cache | jq -r ".pg_stats[] | select ( .up[] | contains ($osd_id)) | [ .pgid, (.up | length), .stat_sum.num_bytes] | @tsv")
+
+for line in ${!pgs_array[@]}; 
+do 
+	set -- ${pgs_array[$line]}; 
+	### Lets be lazy, and assume if we have >3 in the set we are looking at an 8+3 EC pg
+	### otherwise is a replicated pg. You have to do quite a bit more work to determine it correctly
+	if [[ $2 -gt 3 ]] 
+	then 
+		osd_final_sum=$(( osd_final_sum + ($3 / 8)))
+	else
+		osd_final_sum=$(( osd_final_sum + $3 ))
+	fi
+done
+#echo "expected utilisation of osd.$osd_id: $(bc <<< "scale=1; ($osd_final_sum * 100) / $osd_size")%"
+echo "$(bc <<< "scale=1; ($osd_final_sum * 100) / $osd_size")"

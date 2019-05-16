@@ -4,7 +4,7 @@
 
 * final-osd-util assumes that your PGs are either 3 replica, or EC 8+3, depending on PG set length, this is easy to change if your cluster differs
 * I hadn't looked at the code in better-df for a while, but I clearly thought jq was really cool when I wrote it
-* I would not advise useing these tool to guide your cluster operations without FIRST confirming they work as expected on your cluster, they were written in a hurry for a specific purpose and may not work as expected elsewhere.
+* I would not advise using these tool to guide your cluster operations without FIRST confirming they work as expected on your cluster, they were written in a hurry for a specific purpose and may not work as expected elsewhere.
 
 ## Example:
 

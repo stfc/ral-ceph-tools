@@ -1,0 +1,74 @@
+{
+  "storageservice" : {
+    "implementation" : "Ceph",
+    "implementationversion" : "{{ page.version }}",
+    "latestupdate" : {{ page.timestamp }},
+    "name" : "Echo",
+    "storagecapacity" : {
+      "offline" : {
+        "totalsize" : 0,
+        "usedsize" : 0
+      },
+      "online" : {
+        "totalsize" : {{ page.totalsize }},
+        "usedsize" : {{ page.totalused }}
+      }
+    },
+    "storageendpoints" : [
+      {
+        "assignedshares" : [ "all" ],
+        "endpointurl" : "root://xrootd.echo.stfc.ac.uk",
+        "interfacetype" : "xrootd",
+        "name" : "XRootD interface to Echo"
+      },
+      {
+        "assignedshares" : [ "all" ],
+        "endpointurl" : "gsiftp://gridftp.echo.stfc.ac.uk",
+        "interfacetype" : "gsiftp",
+        "name" : "GridFTP interface to Echo"
+       }
+    ],
+    "storageshares" : [
+      {
+        "numberoffiles" : -1,
+        "path" : [ "/alice:" ],
+        "timestamp" : {{ page.timestamp }},
+        "totalsize" : {{ page.alice.quota }},
+        "usedsize" : {{ page.alice.used }},
+        "vos" : [ "alice" ]
+      },
+      {
+        "numberoffiles" : -1,
+        "path" : [ "/atlas:" ],
+        "timestamp" : {{ page.timestamp }},
+        "totalsize" : {{ page.atlas.quota }},
+        "usedsize" : {{ page.atlas.used }},
+        "vos" : [ "atlas" ]
+      },
+      {
+        "numberoffiles" : -1,
+        "path" : [ "/cms:" ],
+        "timestamp" : {{ page.timestamp }},
+        "totalsize" : {{ page.cms.quota }},
+        "usedsize" : {{ page.cms.used }},
+        "vos" : [ "cms" ]
+      },
+      {
+        "numberoffiles" : -1,
+        "path" : [ "/dune:" ],
+        "timestamp" : {{ page.timestamp }},
+        "totalsize" : {{ page.dune.quota }},
+        "usedsize" : {{ page.dune.used }},
+        "vos" : [ "dune" ]
+      },
+      {
+        "numberoffiles" : -1,
+        "path" : [ "/lhcb:" ],
+        "timestamp" : {{ page.timestamp }},
+        "totalsize" : {{ page.lhcb.quota }},
+        "usedsize" : {{ page.lhcb.used }},
+        "vos" : [ "lhcb" ]
+      }
+    ]
+  }
+}

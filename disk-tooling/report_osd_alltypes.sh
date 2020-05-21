@@ -6,8 +6,17 @@ if [[ $(($1)) != $1 ]]; then
 fi
 
 host=$(ceph osd find $1 | jq -r '.crush_location.host')
+if [ -z "$host" ]; then
+echo "Error: Could not find host location"
+exit 1
+fi
 obj=$(ceph osd metadata $1 | jq -r '.osd_objectstore')
+if [ -z "$obj" ]; then
+echo "Error: Could not find OSD objectstore information"
+exit 1
+fi
 
+#Identifies multipath host by running command conditionally
 multipath_check() {
 if ssh $1 multipath -ll ; then
   isMultipath=true
@@ -15,7 +24,7 @@ else
   isMultipath=false
 fi
 }
-
+#Sends output to /dev/null to prevent it from displaying in console
 multipath_check $host &> /dev/null
 
 echo "Hostname is ${host}"
@@ -23,20 +32,26 @@ echo "Hostname is ${host}"
 if [ "$obj" = 'filestore' ]; then
 echo "OSD is filestore"
 
-dev=$(ceph osd metadata $1 | jq -r '.backend_filestore_partition_path' | cut -d '/' -f3)
-type=$(ssh $host udevadm info --query=property /dev/$dev | awk -F= -v key="ID_BUS" '$1==key {print $2}')
+if [[ "$isMultipath" == true ]]; then
+echo "Host is multipath"
+else
+echo "Host is not multipath"
+fi
 
-   if [ "$type" = 'scsi' ]; then
+path=$(ceph osd metadata $1 | jq -r '.backend_filestore_partition_path' | cut -d '/' -f3)
+disktype=$(ssh $host udevadm info --query=property /dev/$path | awk -F= -v key="ID_BUS" '$1==key {print $2}')
 
-   ssh $host smartctl -a -d scsi /dev/$dev > /tmp/smartdata_temp; cat /tmp/smartdata_temp | grep -E 'Serial|Vendor:|Product:|Status:' && cat /tmp/smartdata_temp | grep -B1 -A1 uncorrected | awk '{print $NF}' | paste -sd ' ' && cat /tmp/smartdata_temp | grep -A2 read: | awk '{print $1 $NF}';
+   if [ "$disktype" = 'scsi' ]; then
 
-   elif [ "$type" = 'ata' ]; then
+   ssh $host smartctl -a -d scsi /dev/$path > /tmp/smartdata_temp; cat /tmp/smartdata_temp | grep -E 'Serial|Vendor:|Product:|Status:' && cat /tmp/smartdata_temp | grep -B1 -A1 uncorrected | awk '{print $NF}' | paste -sd ' ' && cat /tmp/smartdata_temp | grep -A2 read: | awk '{print $1 $NF}';
 
-   ssh $host smartctl -a /dev/$dev | grep -E '(Serial|Model|Raw_Read_Error_Rate|Current_Pending_Sector|Offline_Uncorrectable)';
+   elif [ "$disktype" = 'ata' ]; then
+
+   ssh $host smartctl -a /dev/$path | grep -E '(Serial|Model|Raw_Read_Error_Rate|Current_Pending_Sector|Offline_Uncorrectable)';
 
    else
    echo "Error: unknown type of disk (Not ATA or SCSI)"
-
+   exit 1
    fi
 
 elif [ "$obj" = 'bluestore' ]; then

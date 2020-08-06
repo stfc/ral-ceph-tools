@@ -21,7 +21,6 @@ echo "Status: new" > /tmp/driveticket
 echo "Subject: Disk Replacement $1 on $2" >> /tmp/driveticket
 echo "" >> /tmp/driveticket
 echo -e "This drive has been ticketed for replacement using the ticket-drive script.\n" >> /tmp/driveticket
-echo "Path: $parsedpath" >> /tmp/driveticket
 echo "$(cat /tmp/osdreport)" >> /tmp/driveticket
 cat /tmp/driveticket
 
@@ -42,5 +41,20 @@ then
     echo -e "\nTicket submitted to Ceph-Disk and Fabric-Hardware successfully!"
 else
     echo -e "\nTicket was not submitted."
+    exit 1
+fi
+
+#Uses linktickets to find the ticket IDs and link the two tickets together, then print a URL to them.
+echo "Would you like to link the tickets together and receive a URL to them? (Y/N)"
+read -p "Note: This will require RT credentials: " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    subject="Disk Replacement $1 on $2"
+    echo -e "\n"
+    source ~/jamesf/linktickets $subject
+    echo "Ceph-Disk ticket URL: https://helpdesk.gridpp.rl.ac.uk/Ticket/Display.html?id=${cephTicketID}"
+    echo "Fabric-Hardware ticket URL: https://helpdesk.gridpp.rl.ac.uk/Ticket/Display.html?id=${fabricTicketID}"
+else
+    echo -e "\n"
     exit 1
 fi

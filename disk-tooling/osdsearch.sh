@@ -7,18 +7,18 @@ if ! timeout 10 ssh $host exit; then
     exit 1
 fi
 #Multipath identification
-#multipath -ll will fail if used on a non-multipath host, so the command is run conditionally
-#isMultipath variable is set to true or false depending on if the command succeeded or not
-multipath_check() {
-if timeout 10 ssh $1 multipath -ll ; then
+#Compares the output of pvs on the host to see if it contains mapper.
+#If it does, the host is multipath. If not, it is not.
+if ! ssh $host pvs &> /dev/null ; then
+    echo "Error: Could not run pvs for multipath check"
+    exit 1
+fi
+multicheck=$(timeout 10 ssh $host pvs 2>/dev/null)
+if echo "$multicheck" | grep -q "mapper" ; then
     isMultipath=true
 else
     isMultipath=false
 fi
-}
-#multipath -ll output is sent to /dev/null to prevent it from displaying in console window
-#The command output isn't relevant, just the command's success or failure
-multipath_check $host &> /dev/null
 
 path=""
 parsedpath=""
@@ -37,6 +37,10 @@ if [[ "$isMultipath" == true ]]; then
     osd=$(timeout 10 ssh $host ls -l /var/lib/ceph/osd/ceph-*/block 2>/dev/null | grep "$vg" 2>/dev/null | cut -d'/' -f6 | cut -d'-' -f2)
 #OSD sanitization
     if [ -z "$osd" ]; then
+        echo "Error: OSD not found"
+        exit 1
+    fi
+    if ! [[ "$osd" =~ ^[0-9]+$ ]]; then
         echo "Error: OSD not found"
         exit 1
     fi

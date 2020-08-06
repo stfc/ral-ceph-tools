@@ -31,18 +31,18 @@ if [ -z "$gen" ]; then
 fi
 
 #Multipath identification
-#multipath -ll will fail if used on a non-multipath host, so the command is run conditionally
-#isMultipath variable is set to true or false depending on if the command succeeded or not
-multipath_check() {
-if timeout 10 ssh $1 multipath -ll ; then
+#Compares the output of pvs on the host to see if it contains mapper.
+#If it does, the host is multipath. If not, it is not.
+if ! ssh $host pvs &> /dev/null ; then
+    echo "Error: Could not run pvs for multipath check"
+    exit 1
+fi
+multicheck=$(timeout 10 ssh $host pvs 2>/dev/null)
+if echo "$multicheck" | grep -q "mapper" ; then
     isMultipath=true
 else
     isMultipath=false
 fi
-}
-#multipath -ll output is sent to /dev/null to prevent it from displaying in console window
-#The command output isn't relevant, just the command's success or failure
-multipath_check $host &> /dev/null
 
 echo "Hostname: ${host}"
 echo "Hardware Generation: ${gen}"
@@ -57,6 +57,7 @@ if [ "$obj" = 'filestore' ]; then
     fi
     #Locates the partition path i.e. sda, then uses udev info to identify if the disk type is SATA or SAS
     path=$(timeout 10 ceph osd metadata $1 | jq -r '.backend_filestore_partition_path' | cut -d '/' -f3)
+    echo "Path: /dev/$path"
     disktype=$(timeout 10 ssh $host udevadm info --query=property /dev/$path | awk -F= -v key="ID_BUS" '$1==key {print $2}')
 
     if [ "$disktype" = 'scsi' ]; then
@@ -88,6 +89,7 @@ elif [ "$obj" = 'bluestore' ]; then
         echo "Multipath: Yes"
         #Uses the volume group to find the /dev/mapper partition path, then udev to identify SATA or SAS
         part=$(timeout 10 ssh $host pvs --select vg_name=$vg | grep /dev/mapper | cut -d '/' -f4 | cut -d ' ' -f1)
+        echo "Path: /dev/mapper/$part"
         disktype=$(timeout 10 ssh $host udevadm info --query=property /dev/mapper/$part | awk -F= -v key="ID_BUS" '$1==key {print $2}')
 
         if [ "$disktype" = 'ata' ]; then
@@ -106,8 +108,9 @@ elif [ "$obj" = 'bluestore' ]; then
 
     else
         echo "Multipath: No"
-        #Non-multipath uses te same method to identify SATA/SAS, but the parsing is different
+        #Non-multipath uses the same method to identify SATA/SAS, but the parsing is different
         part=$(timeout 10 ssh $host pvs --select vg_name=$vg | grep /dev | cut -d '/' -f3 | cut -d ' ' -f1)
+        echo "Path: /dev/$part"
         disktype=$(timeout 10 ssh $host udevadm info --query=property /dev/$part | awk -F= -v key="ID_BUS" '$1==key {print $2}')
 
         if [ "$disktype" = 'ata' ]; then

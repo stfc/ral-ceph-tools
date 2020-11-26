@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#test comment for git
 #This script will unmount and wipe the partitions from a drive.
 
 if [ $# -ne 1 ]; then

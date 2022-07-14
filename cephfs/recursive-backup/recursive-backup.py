@@ -140,7 +140,16 @@ def get_rctime( directory ):
     rctime_sp = subprocess.run(attrcmd + ["ceph.dir.rctime", directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if (rctime_sp.returncode == 0):
         rctime = rctime_sp.stdout.split(b'.')[0]
-        return {"out": int(rctime), "stderr": rctime_sp.stderr, "rc": rctime_sp.returncode}
+        # check for broken rctimes, identified by having a '0' nanosecond component
+        # due to the bug that prefixes the nanosecond component with '09', we should check for
+        # the string being '090' and '0'
+        # https://tracker.ceph.com/issues/39943
+        broken_rctime = False
+        rctime_nano_string = rctime_sp.stdout.split(b'.')[1].decode()
+        if (rctime_nano_string == '090' or rctime_nano_string == '0'):
+            broken_rctime = True
+        
+        return {"out": int(rctime), "stderr": rctime_sp.stderr, "rc": rctime_sp.returncode, "broken" : broken_rctime }
     else:
         warn_print("error while getting rctime of: {}".format(directory))
         return {"out": 0, "stderr": rctime_sp.stderr, "rc": rctime_sp.returncode}
@@ -172,8 +181,12 @@ def get_rsubdirs( directory ):
 def recurse_rsync( directory ):
     debug_print("starting recurse rsync for directory {}".format(directory))
     rctime = get_rctime( directory )
-    if (rctime["rc"] == 0 and rctime["out"] > backup_time):
-        info_print( "directory {} has a newer rctime of {}, backing up".format(directory, rctime["out"]) )
+    if (rctime["rc"] == 0 and (rctime["out"] > backup_time or rctime["broken"] )):
+        if (rctime["broken"]):
+            info_print( "directory {} has an odd time of {} with no nanosecond component, backing up as rctime is not reliable".format(directory, rctime["out"]) )
+        else:
+            info_print( "directory {} has a newer rctime of {}, backing up".format(directory, rctime["out"]) )
+            
         rsubdirs = get_rsubdirs( directory )
         rfiles = get_rfiles( directory )
         rbytes = get_rbytes( directory )

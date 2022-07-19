@@ -19,6 +19,7 @@ def readable_timedelta(duration: timedelta):
         return '<1s'
 
 
+# regex to match the JSON summary line
 pattern = re.compile("^{.*}$")
 
 OK = 0
@@ -30,8 +31,8 @@ check_time = datetime.now()
 
 parser = argparse.ArgumentParser(description="Check the status of a backup run by the CephFS recursive-backup script.")
 
-parser.add_argument("log", help="log file from backup process")
-parser.add_argument("interval", help="time allowed since last successful backup (in seconds)", type=int)
+parser.add_argument("-f", "--logfile", help="log file from backup process", type=str, required=True)
+parser.add_argument("-i", "--interval", help="time allowed since last successful backup (in seconds)", type=int, required=True)
 
 args = parser.parse_args()
 
@@ -42,16 +43,15 @@ except:
     print("Error parsing last allowed backup time")
     sys.exit(CRIT)
 
-if not os.path.isfile(args.log):
+if not os.path.isfile(args.logfile):
     print ("Backup log file does not exist")
     sys.exit(CRIT)
 
 last_summary="NONE"
 try:
-    for i, line in enumerate(open(args.log)):
+    for i, line in enumerate(open(args.logfile)):
         for match in re.finditer(pattern, line):
             last_summary = match.group()
-            #print("Found on line {}: {}".format(i+1, match.group()))
 except:
     print("Error reading backup log file")
     sys.exit(CRIT)
@@ -106,7 +106,6 @@ except:
     print("Error reading JSON summary: exit time not parsable")
     sys.exit(CRIT)
 
-#if start_time.timestamp() < allowed_last_time.timestamp():
 if start_time < allowed_last_time:
     print( "Last successful backup started at {}, longer ago than the backup interval of {}".format(readable_timedelta(check_time - start_time), readable_timedelta(interval_delta)) )
     sys.exit(CRIT)

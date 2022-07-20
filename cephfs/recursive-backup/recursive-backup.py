@@ -178,6 +178,7 @@ check_pid = local_config.getboolean('check_pid')
 check_space = local_config.getboolean('check_space')
 free_bytes = local_config.getint('free_bytes')
 log_dir = local_config.get('log_dir')
+pid_dir = local_config.get('pid_dir')
 log_to_file = local_config.getboolean('log_to_file')
 run = args.run
 src = args.src

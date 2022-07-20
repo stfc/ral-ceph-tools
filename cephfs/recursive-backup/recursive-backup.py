@@ -102,7 +102,7 @@ parser.add_argument('-v', '--verbose', help="one '-v' for informational messages
 
 args = parser.parse_args()
 
-config.read('/etc/recursive-backup/config.ini')
+config.read('/etc/ceph-fs-backup/config.ini')
 
 if args.name:
     run_name=args.name

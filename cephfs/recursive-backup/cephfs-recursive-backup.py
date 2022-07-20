@@ -58,7 +58,7 @@ start_time=time.time()
 attrcmd = ["getfattr", "--only-values", "-n"]
 
 verbosity="debug"
-run_name="recursive-backup"
+run_name="cephfs-recursive-backup"
 config = configparser.ConfigParser()
 
 # populate defaults
@@ -71,11 +71,11 @@ config['DEFAULT']['verbosity']="none"
 config['DEFAULT']['check_src']="true"
 config['DEFAULT']['check_dst']="true"
 config['DEFAULT']['check_pid']="true"
-config['DEFAULT']['pid_dir']="/var/run/ceph-fs-backup"
+config['DEFAULT']['pid_dir']="/var/run/cephfs-recursive-backup"
 config['DEFAULT']['check_space']="false"
 config['DEFAULT']['free_bytes']="10000000000"
 config['DEFAULT']['log_to_file']="false"
-config['DEFAULT']['log_dir']="/var/log/ceph-fs-backup"
+config['DEFAULT']['log_dir']="/var/log/cephfs-recursive-backup"
 
 parser = argparse.ArgumentParser(description="Generate rsync commands to back up changes to a CephFS filesystem since a given time. Uses the CephFS rctime to determine what has changed, and uses rfiles and rbytes to determine the size of individual rsyncs. By default it will do nothing apart from outputting rsync commands to standard output.")
 
@@ -102,7 +102,7 @@ parser.add_argument('-v', '--verbose', help="one '-v' for informational messages
 
 args = parser.parse_args()
 
-config.read('/etc/ceph-fs-backup/config.ini')
+config.read('/etc/cephfs-recursive-backup/config.ini')
 
 if args.name:
     run_name=args.name

@@ -6,7 +6,7 @@ This script generates rsync commands to back up changes to a CephFS filesystem s
 
 Using the --run option will allow the script to also run the generated rsyncs. In this mode it outputs a summary line when the script exits, which can be redirected to a log, and the nagios/icinga check can be used to report on the state of and time since the last backup. Any non zero exit code from any of the backup runs will cause the backup to be marked as failed.
 
-The config file `/etc/recursive-backup/config.ini` can be used to alter defaults, as well as set specific settings for named jobs (with the -n option). An example config file is present in this repo with all avaliable config file options specified, but it is not compulsory. Command line options will always override config file settings.
+The config file `/etc/cephfs-recursive-backup/config.ini` can be used to alter defaults, as well as set specific settings for named jobs (with the -n option). An example config file is present in this repo with all avaliable config file options specified, but it is not compulsory. Command line options will always override config file settings.
 
 ## Example usage
 
@@ -15,7 +15,7 @@ TODO
 ## Recursive backup script usage
 
 ```
-usage: recursive-backup.py [-h] [-n NAME] [-t TIME] [-d DAYS] [--full]
+usage: cephfs-recursive-backup.py [-h] [-n NAME] [-t TIME] [-d DAYS] [--full]
                            [-f MAXFILES] [-b MAXBYTES] [-s SAFETY]
                            [--checksrc] [--nochecksrc] [--checkdst]
                            [--nocheckdst] [--checkpid] [--nocheckpid]

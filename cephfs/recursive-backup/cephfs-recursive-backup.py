@@ -187,7 +187,7 @@ dst= args.dst
 if log_to_file:
     log_file = os.path.join( log_dir, run_name + ".log" )
     info_print("stdout redirected to {}".format(log_file))
-    sys.stdout = open(log_file, 'w')
+    sys.stdout = open(log_file, 'w+')
 
 # do not check for pidfile if not running the rsyncs
 if not run:

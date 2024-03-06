@@ -374,11 +374,11 @@ if (run):
         rsync = run_rsync(rsync_cmd)
         if (rsync["rc"] == 0):
             timestamp_print("Success")
-            print(rsync["stdout"].decode('ascii'))
+            print(rsync["stdout"].decode())
         else:
             timestamp_print("failure (return code: {})".format(rsync["rc"]))
-            print(rsync["stdout"].decode('ascii'))
-            print(rsync["stderr"].decode('ascii'))
+            print(rsync["stdout"].decode())
+            print(rsync["stderr"].decode())
             warn_print("rsync failed, continuing")
     if warnings is True:
        log_and_exit(success=False, message="backup started at {} ({}) finished with warnings".format(time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(start_time)), start_time))
